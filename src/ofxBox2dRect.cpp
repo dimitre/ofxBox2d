@@ -23,12 +23,12 @@ void ofxBox2dRect::setup(b2World * b2dworld, ofRectangle rec, float angle) {
 //------------------------------------------------
 void ofxBox2dRect::setup(b2World * b2dworld, float x, float y, float w, float h, float angle) {
 
-	
+
 	if(b2dworld == NULL) {
 		ofLog(OF_LOG_NOTICE, "- must have a valid world -");
 		return;
 	}
-	
+
     w /= 2;
     h /= 2;
 	width = w; height = h;
@@ -39,13 +39,13 @@ void ofxBox2dRect::setup(b2World * b2dworld, float x, float y, float w, float h,
 	fixture.density		= density;
 	fixture.friction	= friction;
 	fixture.restitution = bounce;
-	
+
 	b2BodyDef bodyDef;
 	if(density == 0.f) bodyDef.type	= b2_staticBody;
 	else               bodyDef.type	= b2_dynamicBody;
 	bodyDef.position.Set(toB2d(x), toB2d(y));
 	bodyDef.angle = ofDegToRad(angle);
-	
+
 	body = b2dworld->CreateBody(&bodyDef);
 	body->CreateFixture(&fixture);
 
@@ -99,11 +99,11 @@ ofPolyline& ofxBox2dRect::getRectangleShape() {
 
 //------------------------------------------------
 void ofxBox2dRect::addRepulsionForce(float fx, float fy, float amt) {
-	addRepulsionForce(ofVec2f(fx,fy), amt);
+	addRepulsionForce(glm::vec2(fx,fy), amt);
 }
 
 //------------------------------------------------
-void ofxBox2dRect::addRepulsionForce(ofVec2f pt, float amt) {
+void ofxBox2dRect::addRepulsionForce(glm::vec2 pt, float amt) {
 	if(body != NULL) {
 		const b2Transform& xf = body->GetTransform();
 		for (b2Fixture* f = body->GetFixtureList(); f; f = f->GetNext()) {
@@ -128,11 +128,11 @@ void ofxBox2dRect::addRepulsionForce(ofVec2f pt, float amt) {
 // We compute the force for all four (transformed) corners of the rect.
 // This keeps the rect's orientation correct!
 void ofxBox2dRect::addAttractionPoint (float fx, float fy, float amt) {
-	addAttractionPoint(ofVec2f(fx, fy), amt);
+	addAttractionPoint(glm::vec2(fx, fy), amt);
 }
 
 //------------------------------------------------
-void ofxBox2dRect::addAttractionPoint (ofVec2f pt, float amt) {
+void ofxBox2dRect::addAttractionPoint (glm::vec2 pt, float amt) {
 
 	if(body != NULL) {
 		const b2Transform& xf = body->GetTransform();
@@ -158,7 +158,7 @@ void ofxBox2dRect::draw() {
 	if(body == NULL) {
 		return;
 	}
-	
+
     ofPushMatrix();
     ofTranslate(ofxBox2dBaseShape::getPosition());
     ofRotateDeg(getRotation());
@@ -206,19 +206,3 @@ void ofxBox2dRect::draw() {
     }
 	*/
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

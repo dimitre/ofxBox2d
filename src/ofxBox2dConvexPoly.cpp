@@ -12,7 +12,7 @@
 #include "ofxBox2d.h"
 
 ////----------------------------------------
-//ofxBox2dConvexPoly::~ofxBox2dPolygon() { 
+//ofxBox2dConvexPoly::~ofxBox2dPolygon() {
 //}
 //
 ////----------------------------------------
@@ -27,42 +27,45 @@ ofxBox2dConvexPoly::ofxBox2dConvexPoly() {
 
 //------------------------------------------------
 void ofxBox2dConvexPoly::setup(b2World * b2dworld, ofPolyline & _line){
-	
+
 	float scale = ofxBox2d::getScale();
-	
+
 	ofPolyline line = ofxBox2dPolygonUtils::getConvexHull(_line);
     line.getVertices().erase(line.getVertices().end()-1);
-    
-    
+
+
     b2Vec2 * vertices;
-    int32  vertexCount = line.getVertices().size();
+    std::size_t vertexCount = line.getVertices().size();
     vertices = new b2Vec2[vertexCount];
-    ofPoint pos;
+    glm::vec2 pos;
     ghettoRadius = 0;
     for (int i = 0; i < vertexCount; i++){
         vertices[i].x = line.getVertices()[i].x;
         vertices[i].y = line.getVertices()[i].y;
         pos.x += line.getVertices()[i].x;
         pos.y += line.getVertices()[i].y;
-        
+
     }
     pos /= (float)vertexCount;
-    
+
+//	Invalid operands to binary expression ('glm::vec2' (aka 'vec<2, float, defaultp>') and 'value_type' (aka 'glm::vec<3, float>'))
+	
     for (int i = 0; i < vertexCount; i++){
-        float dist = (pos - line.getVertices()[i]).length();
+		float dist = glm::distance(glm::vec3(pos, 0.0f), line.getVertices()[i]);
+//        float dist = (pos - line.getVertices()[i]).length();
         if (dist > ghettoRadius){
             ghettoRadius = dist;
         }
     }
 
-    
+
     for (int i = 0; i < vertexCount; i++){
         vertices[i].x /= scale;
         vertices[i].y /= scale;
     }
-    
-    ofPoint posCent = ofPoint(200,200) - pos;
-    
+
+    glm::vec2 posCent = glm::vec2(200,200) - pos;
+
     pos /= scale;
     posCent /= scale;
     ghettoRadius    /= scale;
@@ -76,75 +79,75 @@ void ofxBox2dConvexPoly::setup(b2World * b2dworld, ofPolyline & _line){
 		path.lineTo(cur);
 	}
 	gpuCachedTesselation = path.getTessellation();
-	
-    
+
+
     float x = pos.x ;
     float y = pos.y ;
-	
+
 	if(b2dworld == NULL) {
 		ofLog(OF_LOG_NOTICE, "ofxBox2dConvexPoly :: setup : - must have a valid world -");
 		return;
 	}
-	
+
 	// these are used to create the shape
-	
+
 	shape.Set(vertices, vertexCount);
-    
+
     delete vertices;
-    
+
 	fixture.shape		= &shape;
 	fixture.density		= density;
 	fixture.friction	= friction;
 	fixture.restitution	= bounce;
-	
+
 	if(density == 0.f)	bodyDef.type	= b2_staticBody;
 	else				bodyDef.type	= b2_dynamicBody;
-	
+
 	bodyDef.position.Set(x,y);
-	
+
 	body  = b2dworld->CreateBody(&bodyDef);
 	body->CreateFixture(&fixture);
-    
+
     scale = 1;
 }
 
 //------------------------------------------------
 void ofxBox2dConvexPoly::setScale(float _scale){
-    
-    
+
+
     if(!isBody()) return;
-    
+
     b2Fixture* fix = body->GetFixtureList();
-    
+
     scale = _scale;
-    
+
     b2PolygonShape* shape = (b2PolygonShape*) fix->GetShape();
-    
+
     for (int i = 0; i < polyPts.size(); i++){
-        shape->m_vertices[i].Set(polyPts[i].x*scale, polyPts[i].y*scale); 
+        shape->m_vertices[i].Set(polyPts[i].x*scale, polyPts[i].y*scale);
     }
-    
-    
+
+
 }
 
 
 
-void ofxBox2dConvexPoly::addAttractionPoint (ofVec2f pt, float amt) {
-    // we apply forces at each vertex. 
+void ofxBox2dConvexPoly::addAttractionPoint (glm::vec2 pt, float amt) {
+    // we apply forces at each vertex.
     if(body != NULL) {
         const b2Transform& xf = body->GetTransform();
-		
+
         for (b2Fixture* f = body->GetFixtureList(); f; f = f->GetNext()) {
             b2PolygonShape* poly = (b2PolygonShape*)f->GetShape();
-            
+
             if(poly) {
                 b2Vec2 P = toB2d(pt);
                 for(int i=0; i<poly->GetVertexCount(); i++) {
                     b2Vec2 qt = b2Mul(xf, poly->GetVertex(i));
-                    b2Vec2 D = P - qt; 
+                    b2Vec2 D = P - qt;
                     b2Vec2 F = amt * D;
                     body->ApplyForce(F, P, true);
-                }                    
+                }
             }
         }
     }
@@ -153,31 +156,31 @@ void ofxBox2dConvexPoly::addAttractionPoint (ofVec2f pt, float amt) {
 
 //----------------------------------------
 void ofxBox2dConvexPoly::addAttractionPoint (float x, float y, float amt) {
-    addAttractionPoint(ofVec2f(x, y), amt);
+    addAttractionPoint(glm::vec2(x, y), amt);
 }
 
 //----------------------------------------
 void ofxBox2dConvexPoly::addRepulsionForce(float x, float y, float amt) {
-	addRepulsionForce(ofVec2f(x, y), amt);
+	addRepulsionForce(glm::vec2(x, y), amt);
 }
-void ofxBox2dConvexPoly::addRepulsionForce(ofVec2f pt, float amt) {
-	// we apply forces at each vertex. 
+void ofxBox2dConvexPoly::addRepulsionForce(glm::vec2 pt, float amt) {
+	// we apply forces at each vertex.
     if(body != NULL) {
         const b2Transform& xf = body->GetTransform();
-		
+
         for (b2Fixture* f = body->GetFixtureList(); f; f = f->GetNext()) {
             b2PolygonShape* poly = (b2PolygonShape*)f->GetShape();
-            
+
             if(poly) {
-				
+
                 b2Vec2 P = toB2d(pt);
-                
+
                 for(int i=0; i<poly->GetVertexCount(); i++) {
                     b2Vec2 qt = b2Mul(xf, poly->GetVertex(i));
-                    b2Vec2 D = P - qt; 
+                    b2Vec2 D = P - qt;
                     b2Vec2 F = amt * D;
                     body->ApplyForce(-F, P, true);
-                }                    
+                }
             }
         }
     }
@@ -197,4 +200,3 @@ void ofxBox2dConvexPoly::draw() {
 	gpuCachedTesselation.draw();
 	ofPopMatrix();
 }
-

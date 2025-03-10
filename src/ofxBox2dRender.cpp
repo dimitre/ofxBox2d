@@ -17,22 +17,22 @@ void ofxBox2dRender::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, cons
 	ofSetColor(color.r*255.0, color.g*255.0, color.b*255.0);
 	ofBeginShape();
 	for (int i = 0; i < vertexCount; ++i) {
-		ofVec2f p = ofxBox2d::toOf(vertices[i]);
+		glm::vec2 p = ofxBox2d::toOf(vertices[i]);
 		ofVertex(p.x, p.y);
 	}
 	ofEndShape();
 }
 void ofxBox2dRender::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) {
-	
+
 	ofSetHexColor(0xffffff);
 	ofBeginShape();
 	for(int i=0; i<vertexCount; ++i) {
-		ofVec2f p = ofxBox2d::toOf(vertices[i]);
+		glm::vec2 p = ofxBox2d::toOf(vertices[i]);
 		ofVertex(p.x, p.y);
 	}
 	ofEndShape();
-	
-	
+
+
 }
 void ofxBox2dRender::DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color) {
 	const float32 k_segments = 16.0f;
@@ -80,6 +80,5 @@ void ofxBox2dRender::DrawAABB(b2AABB* aabb, const b2Color& color) {
 }
 
 void ofxBox2dRender::DrawParticles(const b2Vec2 *centers, float32 radius, const b2ParticleColor *colors, int32 count) {
-	
-}
 
+}

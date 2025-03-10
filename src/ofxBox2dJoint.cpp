@@ -37,18 +37,18 @@ ofxBox2dJoint::ofxBox2dJoint(b2World* b2world, b2DistanceJointDef jointDef) {
 
 //----------------------------------------
 void ofxBox2dJoint::setup(b2World* b2world, b2Body* body1, b2Body* body2, float frequencyHz, float damping, bool bCollideConnected) {
-	
+
 	if(body1 == NULL || body2 == NULL) {
 		ofLog(OF_LOG_NOTICE, "ofxBox2dJoint :: setup : - box2d body is NULL -");
 		return;
 	}
-	
+
 	b2Vec2 a1, a2;
 	a1 = body1->GetWorldCenter();
 	a2 = body2->GetWorldCenter();
-	
+
 	setup(b2world, body1, body2, a1, a2, frequencyHz, damping, bCollideConnected);
-    
+
     alive = true;
 }
 
@@ -64,8 +64,8 @@ void ofxBox2dJoint::setup(b2World* b2world, b2Body* body1, b2Body* body2, b2Vec2
 	jointDef.Initialize(body1, body2, anchor1, anchor2);
 	jointDef.collideConnected	= bCollideConnected;
 	jointDef.frequencyHz		= frequencyHz;
-	jointDef.dampingRatio		= damping;	
-	
+	jointDef.dampingRatio		= damping;
+
     setup(b2world, jointDef);
 }
 
@@ -73,9 +73,9 @@ void ofxBox2dJoint::setup(b2World* b2world, b2Body* body1, b2Body* body2, b2Vec2
 void ofxBox2dJoint::setup(b2World* b2world, b2DistanceJointDef jointDef) {
 
     setWorld(b2world);
-    
+
     joint = (b2DistanceJoint*)world->CreateJoint(&jointDef);
-	
+
 	alive = true;
 }
 
@@ -83,19 +83,19 @@ void ofxBox2dJoint::setup(b2World* b2world, b2DistanceJointDef jointDef) {
 void ofxBox2dJoint::setupMouseJoint(b2World* b2world, b2Body* bodyMouse, b2Body* bodyObj, float frequencyHz, float damping) {
     jointType = e_mouseJoint;
     b2MouseJointDef jointDef;
-    
+
     jointDef.bodyA = bodyMouse;
     jointDef.bodyB = bodyObj;
     jointDef.target = bodyObj->GetWorldCenter();
     jointDef.maxForce = bodyObj->GetMass()*1000;
     jointDef.frequencyHz = frequencyHz;
     jointDef.dampingRatio = damping;
-    
-    
+
+
     setWorld(b2world);
-    
+
     joint = world->CreateJoint(&jointDef);
-    
+
     alive = true;
 }
 
@@ -109,7 +109,7 @@ void ofxBox2dJoint::updateTarget() {
 //----------------------------------------
 void ofxBox2dJoint::setWorld(b2World* w) {
 	if(w == NULL) {
-		ofLog(OF_LOG_NOTICE, "ofxBox2dJoint :: setWorld : - box2d world needed -");	
+		ofLog(OF_LOG_NOTICE, "ofxBox2dJoint :: setWorld : - box2d world needed -");
 		return;
 	}
 	world = w;
@@ -132,8 +132,8 @@ bool ofxBox2dJoint::isSetup() {
 //----------------------------------------
 void ofxBox2dJoint::draw() {
 	if(!alive) return;
-	ofVec2f p1 = ofxBox2d::toOf(joint->GetAnchorA());
-	ofVec2f p2 = ofxBox2d::toOf(joint->GetAnchorB());
+	glm::vec2 p1 = ofxBox2d::toOf(joint->GetAnchorA());
+	glm::vec2 p2 = ofxBox2d::toOf(joint->GetAnchorB());
 	ofDrawLine(p1, p2);
 }
 
@@ -190,9 +190,9 @@ float ofxBox2dJoint::getDamping() {
 
 
 //----------------------------------------
-ofVec2f ofxBox2dJoint::getReactionForce(float inv_dt) const {
+glm::vec2 ofxBox2dJoint::getReactionForce(float inv_dt) const {
 	b2Vec2 vec = getReactionForceB2D(inv_dt);
-	return ofVec2f(vec.x, vec.y);
+	return glm::vec2(vec.x, vec.y);
 }
 b2Vec2 ofxBox2dJoint::getReactionForceB2D(float inv_dt) const {
 	if(joint) {
@@ -206,7 +206,3 @@ float ofxBox2dJoint::getReactionTorque(float inv_dt) const {
 	}
 	return 0;
 }
-
-
-
-

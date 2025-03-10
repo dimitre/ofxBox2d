@@ -24,24 +24,24 @@ void ofxBox2dEdge::destroy() {
 
 //----------------------------------------
 void ofxBox2dEdge::create(b2World * b2dworld) {
-   
+
     bFlagShapeUpdate = false;
-    
+
     if(size() < 2) {
 		printf("need at least 3 points\n");
 		return;
 	}
-	
+
 	if (body != NULL) {
 		b2dworld->DestroyBody(body);
 		body = NULL;
 	}
-	
+
 	// create the body from the world (1)
 	b2BodyDef		bd;
 	bd.type			= density <= 0.0 ? b2_staticBody : b2_dynamicBody;
 	body			= b2dworld->CreateBody(&bd);
-    
+
     vector<ofDefaultVertexType>&pts = ofPolyline::getVertices();
 	for(int i=1; i<(int)size(); i++) {
         b2EdgeShape edge;
@@ -52,9 +52,9 @@ void ofxBox2dEdge::create(b2World * b2dworld) {
     mesh.setUsage(body->GetType()==b2_staticBody?GL_STATIC_DRAW:GL_DYNAMIC_DRAW);
     mesh.setMode(OF_PRIMITIVE_LINE_STRIP);
     for(int i=0; i<(int)size(); i++) {
-        mesh.addVertex(ofVec3f(pts[i].x, pts[i].y));
+		mesh.addVertex({ pts[i].x, pts[i].y, 0.0f });
     }
-    
+
     flagHasChanged();
     alive = true;
 }
@@ -63,7 +63,7 @@ void ofxBox2dEdge::create(b2World * b2dworld) {
  These were in ofPolyline and now are gone?
  */
 //----------------------------------------
-void ofxBox2dEdge::addVertexes(vector <ofVec2f> &pts) {
+void ofxBox2dEdge::addVertexes(vector <glm::vec2> &pts) {
 	for (int i=0; i<pts.size(); i++) {
         ofPolyline::addVertex(pts[i].x, pts[i].y);
 	}
@@ -80,30 +80,30 @@ void ofxBox2dEdge::addVertexes(ofPolyline &polyline) {
 
 //----------------------------------------
 void ofxBox2dEdge::updateShape() {
-    
+
     if(body==NULL) return;
-    
+
     ofPolyline::clear();
     mesh.clear();
     mesh.setUsage(body->GetType()==b2_staticBody?GL_STATIC_DRAW:GL_DYNAMIC_DRAW);
     mesh.setMode(OF_PRIMITIVE_LINE_STRIP);
-   
+
     for (b2Fixture * f = body->GetFixtureList(); f; f = f->GetNext()) {
         b2EdgeShape * edge = (b2EdgeShape*)f->GetShape();
-        
+
         if(edge) {
-            
-            ofVec2f a(ofxBox2d::toOf(edge->m_vertex1));
-            ofVec2f b(ofxBox2d::toOf(edge->m_vertex2));
-            
+
+            glm::vec2 a(ofxBox2d::toOf(edge->m_vertex1));
+            glm::vec2 b(ofxBox2d::toOf(edge->m_vertex2));
+
 			ofPolyline::addVertex(a.x, a.y, 0);
             ofPolyline::addVertex(b.x, b.y, 0);
-            
+
             mesh.addVertex(glm::vec3(a.x, a.y, 0));
             mesh.addVertex(glm::vec3(b.x, b.y, 0));
         }
     }
-    
+
     bFlagShapeUpdate = true;
     flagHasChanged();
 }
@@ -111,19 +111,10 @@ void ofxBox2dEdge::updateShape() {
 //----------------------------------------
 void ofxBox2dEdge::draw() {
     if(body==NULL) return;
-   
+
 	if(!bFlagShapeUpdate && body->GetType() != b2_staticBody) {
         printf("Need to update shape first\n");
     }
     mesh.draw();
     bFlagShapeUpdate = false;
 }
-
-
-
-
-
-
-
-
-

@@ -13,19 +13,19 @@
 #include "ofxBox2dPolygonUtils.h"
 
 class ofxBox2dEdge : public ofxBox2dBaseShape, public ofPolyline {
-    
+
 private:
     bool bFlagShapeUpdate;
-    
+
 public:
 
     ofVboMesh mesh;
     void addVertexes(ofPolyline &polyline);
-    void addVertexes(vector <ofVec2f> &pts);
-    
+    void addVertexes(vector <glm::vec2> &pts);
+
     void clear();
     void destroy();
-    
+
     void create(b2World * b2dworld);
     void updateShape();
     void draw();

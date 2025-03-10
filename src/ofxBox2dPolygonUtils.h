@@ -36,15 +36,15 @@ public:
 class ofxBox2dPolygonUtils {
 
 public:
-	
-	
+
+
 	// from zach ofxTriangleMesh
 	// way better imp https://github.com/ofZach/ofxTriangleMesh
 	static vector <TriangleShape> triangulate(ofPolyline contour, float angleConstraint = 28, float sizeConstraint = -1);
 
-	static bool isPointInsidePolygon(const ofPoint & p, const vector<ofDefaultVertexType> & polygon);
+	static bool isPointInsidePolygon(const glm::vec2 & p, const vector<ofDefaultVertexType> & polygon);
 	static ofPolyline getConvexHull(vector<ofDefaultVertexType>&linePts);
 	static ofPolyline getConvexHull(ofPolyline &line);
-	static ofPoint getTriangleCenter(ofPoint &a, ofPoint &b, ofPoint &c);
-	static ofPoint getTriangleCenter(ofPoint *tr);
+	static glm::vec2 getTriangleCenter(glm::vec2 &a, glm::vec2 &b, glm::vec2 &c);
+	static glm::vec2 getTriangleCenter(glm::vec2 *tr);
 };

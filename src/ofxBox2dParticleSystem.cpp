@@ -16,7 +16,7 @@ int nPairs = m_particleSystem->GetContactCount();
 for(int i=0; i<nPairs; i++) {
 	b2Vec2 a = m_particleSystem->GetPositionBuffer()[pairs[i].GetIndexA()];
 	b2Vec2 b = m_particleSystem->GetPositionBuffer()[pairs[i].GetIndexB()];
-	
+
 	connectionsMesh.addVertex(ofVec3f(a.x, a.y));
 	connectionsMesh.addVertex(ofVec3f(b.x, b.y));
 }
@@ -52,12 +52,12 @@ ParticleSystem::ParticleSystem() {
 
 //--------------------------------------------------------------
 void ParticleSystem::init(b2World * _world, int _maxParticles) {
-	
+
 	pointSizeOffset = 1;
-	
+
 	// set the world from
 	world = _world;
-	
+
 	/*if (particleSystem != NULL) {
 		delete particleSystem;
 		particleSystem = NULL;
@@ -66,16 +66,16 @@ void ParticleSystem::init(b2World * _world, int _maxParticles) {
 	// create the main particle system
 	const b2ParticleSystemDef particleSystemDef;
 	particleSystem = world->CreateParticleSystem(&particleSystemDef);
-	
+
 	// gravity scale
 	particleSystem->SetGravityScale(1);//0.4f);
-	
+
 	// density
 	particleSystem->SetDensity(1.2f);
-	
+
 	// default particle flag
 	particleFlag = b2_waterParticle;
-	
+
 	// set max particles this will allocate the mesh
 	// and setup the b2dparticles systems
 	setMaxParticles(_maxParticles);
@@ -95,26 +95,26 @@ b2Body * ParticleSystem::createBody(const b2BodyDef* def) {
 #pragma mark - add particles
 //--------------------------------------------------------------
 void ParticleSystem::addParticle(float x, float y, uint32 flags) {
-    
+
 	b2ParticleDef pd;
 	pd.position = ofxBox2d::toB2d(x, y);
 	pd.flags = flags;
-	
+
 	particleSystem->CreateParticle(pd);
 }
 
 //--------------------------------------------------------------
 void ParticleSystem::addParticleGroup(float x, float y, uint32 flags, float rad) {
-	
+
 	b2CircleShape shape;
 	shape.m_p = ofxBox2d::toB2d(x, y);
 	shape.m_radius = ofxBox2d::toB2d(rad);
-	
+
 	b2ParticleGroupDef pg;
 	pg.shape = &shape;
 	pg.flags = flags;
 	pg.groupFlags = b2_rigidParticleGroup;
-	
+
 	particleSystem->CreateParticleGroup(pg);
 }
 
@@ -123,7 +123,7 @@ void ParticleSystem::addParticleGroup(float x, float y, uint32 flags, float rad)
 void ParticleSystem::clearParticles() {
 	for (int i=0; i<particleSystem->GetParticleCount(); i++) {
 		particleSystem->DestroyParticle(i);
-		mesh.setVertex(i, ofVec3f(-1000, -1000, 0));
+		mesh.setVertex(i, { -1000, -1000, 0 });
 	}
 }
 
@@ -133,9 +133,9 @@ int ParticleSystem::removeOutsideBounds(const ofRectangle &bounds) {
 	int n = particleSystem->GetParticleCount();
 	b2Vec2 * positions = particleSystem->GetPositionBuffer();
 	for(int i=0; i<n; i++) {
-		ofVec2f pos = toOf(positions[i]);
+		glm::vec2 pos = toOf(positions[i]);
 		if(!bounds.inside(pos)) {
-			mesh.setVertex(i, ofVec3f(-1000, -1000, 0));
+			mesh.setVertex(i, { -1000, -1000, 0 });
 			particleSystem->DestroyParticle(i);
 			count ++;
 		}
@@ -162,23 +162,23 @@ void ParticleSystem::setPointSizeOffsetPercent(float pct) {
 
 //--------------------------------------------------------------
 void ParticleSystem::setMaxParticles(int count) {
-	
+
 	// set the max particles
 	particleSystem->SetMaxParticleCount(count);
-	
+
 	mesh.clear();
-	
+
 	for(int i=0; i<count; i++) {
-		mesh.addVertex(ofVec3f(-1000, -1000, 0));
+		mesh.addVertex({ -1000, -1000, 0 });
 	}
-	
+
 	// set the mesh to draw points
 	mesh.setMode(OF_PRIMITIVE_POINTS);
 }
 
 //--------------------------------------------------------------
 uint32 ParticleSystem::setParticleType(int type) {
-	
+
 	switch(type) {
 		case 0:
 			particleFlag = b2_waterParticle;
@@ -224,7 +224,7 @@ uint32 ParticleSystem::setParticleType(int type) {
 			break;
 	}
 	cout << "particle flag " << particleFlag << endl;
-	
+
 	// update all the particles with the new type
 	if(particleSystem != NULL) {
 		int n = particleSystem->GetParticleCount();
@@ -232,7 +232,7 @@ uint32 ParticleSystem::setParticleType(int type) {
 			particleSystem->SetParticleFlags(i, particleFlag);
 		}
 	}
-	
+
 	return particleFlag;
 }
 
@@ -254,13 +254,13 @@ int ParticleSystem::getTotalParticles() {
 }
 
 //--------------------------------------------------------------
-vector <ofVec2f> ParticleSystem::getPositions() {
+vector <glm::vec2> ParticleSystem::getPositions() {
 	float scale = ofxBox2d::getScale();
 	int particleCount = particleSystem->GetParticleCount();
 	b2Vec2 * pos = particleSystem->GetPositionBuffer();
-	vector <ofVec2f> positions;
+	vector <glm::vec2> positions;
 	for(int i=0; i<particleCount; i++) {
-		positions.push_back(ofVec2f(pos[i].x * scale, pos[i].y * scale));
+		positions.push_back(glm::vec2(pos[i].x * scale, pos[i].y * scale));
 	}
 	return positions;
 }
@@ -279,42 +279,42 @@ float ParticleSystem::getRenderRadius() {
 #pragma mark - rendering
 //--------------------------------------------------------------
 void ParticleSystem::updateMesh() {
-	
+
 	// update the particle system mesh
 	int particleCount = particleSystem->GetParticleCount();
 	const b2Vec2 * pos = particleSystem->GetPositionBuffer();
-	
+
 	// this is great! (how hard are the contacting eachother 0 - 1
 	// const float32 * weights = particleSystem->GetWeightBuffer();
 	mesh.clear();
 	for (int i=0; i<particleCount; i++) {
-		mesh.addVertex(ofVec3f(pos[i].x, pos[i].y, 0));
+		mesh.addVertex({ pos[i].x, pos[i].y, 0 });
 		// mesh.setColor(i, ofFloatColor(1, weights[i], 1));
 	}
 }
 
 //--------------------------------------------------------------
 void ParticleSystem::drawShape(b2Fixture* fixture, const b2Transform& xf, const b2Color& color, float scaleFactor) {
-	
+
 	if (!fixture) return;
-	
+
 	switch (fixture->GetType())
 	{
 		case b2Shape::e_circle:
 		{
 			b2CircleShape* circle = (b2CircleShape*)fixture->GetShape();
-			
+
 			b2Vec2 center = b2Mul(xf, circle->m_p);
 			float32 radius = circle->m_radius;
 			b2Vec2 axis = b2Mul(xf.q, b2Vec2(1.0f, 0.0f));
-			
+
 			ofPushMatrix();
 			ofTranslate(center.x, center.y);
 			ofDrawCircle(0, 0, radius*scaleFactor);
 			ofPopMatrix();
 		}
 			break;
-			
+
 		case b2Shape::e_edge:
 		{
 			b2EdgeShape* edge = (b2EdgeShape*)fixture->GetShape();
@@ -323,13 +323,13 @@ void ParticleSystem::drawShape(b2Fixture* fixture, const b2Transform& xf, const 
 			ofDrawLine(v1.x, v1.y, v2.x, v2.y);
 		}
 			break;
-			
+
 		case b2Shape::e_chain:
 		{
 			b2ChainShape* chain = (b2ChainShape*)fixture->GetShape();
 			int32 count = chain->m_count;
 			const b2Vec2* vertices = chain->m_vertices;
-			
+
 			b2Vec2 v1 = b2Mul(xf, vertices[0]);
 			for (int32 i = 1; i < count; ++i)
 			{
@@ -340,14 +340,14 @@ void ParticleSystem::drawShape(b2Fixture* fixture, const b2Transform& xf, const 
 			}
 		}
 			break;
-			
+
 		case b2Shape::e_polygon:
 		{
 			b2PolygonShape* poly = (b2PolygonShape*)fixture->GetShape();
 			int32 vertexCount = poly->m_count;
 			b2Assert(vertexCount <= b2_maxPolygonVertices);
 			b2Vec2 vertices[b2_maxPolygonVertices];
-			
+
 			ofBeginShape();
 			for (int32 i = 0; i < vertexCount; ++i)
 			{
@@ -357,7 +357,7 @@ void ParticleSystem::drawShape(b2Fixture* fixture, const b2Transform& xf, const 
 			ofEndShape(true);
 		}
 			break;
-			
+
 		default:
 			break;
 	}
@@ -365,14 +365,14 @@ void ParticleSystem::drawShape(b2Fixture* fixture, const b2Transform& xf, const 
 
 //--------------------------------------------------------------
 void ParticleSystem::drawShapes(float scaleFactor) {
-	
+
 	float scale = ofxBox2d::getScale();
-	
+
 	ofPushStyle();
 	ofPushMatrix();
 	ofTranslate(0, 0);
 	ofScale(scale, scale);
-	
+
 	// render anything in the box2d world
 	b2Body * bodyList = world->GetBodyList();
 	for (b2Body* b = bodyList; b; b = b->GetNext()) {
@@ -381,7 +381,7 @@ void ParticleSystem::drawShapes(float scaleFactor) {
 			drawShape(f, xf, b2Color(0.5f, 0.9f, 0.5f), scaleFactor);
 		}
 	}
-	
+
 	ofPopMatrix();
 	ofPopStyle();
 }
@@ -389,48 +389,48 @@ void ParticleSystem::drawShapes(float scaleFactor) {
 //--------------------------------------------------------------
 void ParticleSystem::draw() {
 	float scale = ofxBox2d::getScale();
-	
+
 	ofPushStyle();
 	ofPushMatrix();
 	ofTranslate(0, 0);
 	ofScale(scale, scale);
-	
+
 	float particlePointSize = getRenderRadius();
 
 	glPointSize(particlePointSize);
 	mesh.draw();
 	glPointSize(1);
-	
+
 	ofPopMatrix();
 	ofPopStyle();
-	
+
 }
 
 //--------------------------------------------------------------
 void ParticleSystem::drawConnections(ofColor color, bool withWeights) {
-	
+
 	const b2Vec2 * positions = particleSystem->GetPositionBuffer();
-	
+
 	/*
 	const b2ParticleTriad * triads = particleSystem->GetTriads();
 	int count = particleSystem->GetTriadCount();
-	
-	
+
+
 	for (int i=0; i<count; i++) {
 		const b2ParticleTriad contact = triads[i];
-		
+
 		ofSetColor(color);
-		
+
 		ofDrawLine(positions[contact.indexA].x * scale, positions[contact.indexA].y * scale,
 				   positions[contact.indexB].x * scale, positions[contact.indexB].y * scale);
-		
+
 	}
 	*/
-	
+
 	const b2ParticleContact * contacts = particleSystem->GetContacts();
 
 	int count = particleSystem->GetContactCount();
-	
+
 	for (int i=0; i<count; i++) {
 		const b2ParticleContact contact = contacts[i];
 		ofSetColor(color, withWeights ? (contact.GetWeight() * 255) : 255);
